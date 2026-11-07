@@ -1,0 +1,6 @@
+init.defaultbranch=[값 마스킹]
+init.defaultbranch=[값 마스킹]
+remote.origin.url=[값 마스킹]
+remote.origin.fetch=[값 마스킹]
+user.name=[값 마스킹]
+user.email=[값 마스킹]

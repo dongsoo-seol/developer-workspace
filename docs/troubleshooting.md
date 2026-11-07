@@ -185,3 +185,8 @@ Linux 실습은 WSL2 Ubuntu에 들어가 홈 디렉터리 아래에 전용 폴�
 ## 6단계 추가 사례
 
 [바인드 마운트 실습의 트러블슈팅](06-port-bind-mount.md#troubleshooting)에는 없는 디렉터리로 cd한 뒤 다른 위치에서 파일을 만든 문제, ocker 오타로 컨테이너 생성이 실패해 inspect도 실패한 문제, HTML 제목을 반복 삽입한 문제와 실제 해결·재검증 결과를 기록했다.
+
+
+## 8단계 추가 사례
+
+[8단계 문제와 대안](08-git-github-submission.md#troubleshooting)에 code 명령 미인식, Restricted Mode, 아티팩트 다운로드 실패와 Git 전달 대안, 이미지 저장 위치·복사 문제를 실제 확인 범위와 함께 정리했다.

@@ -1,155 +1,27 @@
-개발 워크스테이션 과제 — 현재까지의 1~7단계 제출 자료
+제출 자료의 문서 최종 수정본 — 2026-11-08
 
-1. 이 묶음에 들어 있는 자료
+현재 확인한 단계
+1~7단계 기능 실습 완료
+8단계 Git 설정, 공식 확장 인증, 제출 소스 재현, 자원 정리 확인
+로컬 커밋 1edb655: 28개 파일 보관
 
-README.md: 전체 개요, 실행 환경, 진행 상태, 핵심 결과와 증거 링크
-docs/01-environment.md: 1단계 실제 환경 점검 보고서
-docs/02-terminal-paths.md: 2단계 실제 터미널·경로 실습 보고서
-docs/03-permissions.md: 3단계 실제 권한 변경 보고서
-docs/04-docker-operations.md: 4단계 Docker 운영·로그·리소스·컨테이너 수명 비교
-docs/evidence/04-docker-session.md: 첨부 텍스트의 순서를 보존한 공개용 전체 실행 증거
-docs/05-custom-image.md: 공식 Nginx 기반 커스텀 웹 서버 보고서
-docs/evidence/05-web-session.md: 5단계 전체 실행 증거
-Dockerfile, app/index.html, .dockerignore: 실제 출력에서 추출한 웹 서버 소스
-docs/images/이미지추가안내.txt: 브라우저 PNG를 제출 폴더에 넣는 방법
-docs/06-port-bind-mount.md: 6단계 포트·바인드 마운트·수정 전후 검증 보고서
-docs/evidence/06-bind-session.md: 초기 실패와 해결을 포함한 전체 실행 증거
-examples/step6/app/index.html: 6단계에서 수정한 HTML의 최종 내용
-docs/07-volume-persistence.md: 첫 컨테이너 삭제 후 새 컨테이너에서 같은 볼륨 데이터 읽기
-docs/evidence/07-volume-session.md: 7단계 두 회차의 실제 전체 실행 기록
-docs/troubleshooting.md: 오류와 원인 확인·해결·후속 검증
-docs/learning-notes.md: 이해를 돕는 개념 복습 자료
-docs/submission-checklist.md: 현재 산출물과 남은 전체 과제 점검표
+사용자 PC에서 확인한 추가 파일
+사진 5개: docs/images의 05-web-access, 06-bind-before, 06-bind-after,
+08-vscode-github, 08-repro-web PNG
+실제 마스킹 설정 출력: docs/evidence/08-git-config-masked.txt
+8단계 보고서: docs/08-git-github-submission.md
 
-2. Windows에서 파일 사용하기
+이번 수정은 README와 보고서의 이미지·설정 증거 링크를 실제 표시 방식으로 정리했습니다.
+원본 소스·Dockerfile·사용자 PC의 PNG는 바꾸지 않습니다.
+전달용 브랜치에서 문서만 받을 때는 안내된 파일 경로만 복원합니다.
+docs 폴더 전체를 통째로 복원하면 브랜치에 없는 로컬 PNG가 제거될 수 있으므로 그렇게 하지 않습니다.
+현재 자료는 1edb655로 보관되어 있어 수정 전 문서를 Git에서 다시 확인할 수 있습니다.
 
-압축 파일을 다운로드합니다.
-파일 탐색기에서 우클릭 → '모두 압축 풀기'를 선택합니다.
-압축을 푼 폴더에서 README.md를 메모장 또는 VS Code로 엽니다.
-한글이 정상적으로 보이는지 확인합니다. 파일은 UTF-8입니다.
+남은 작업
+문서 변경 내용 검토와 추가 커밋
+main 푸시 성공 확인
+GitHub 웹에서 파일·이미지·문서 링크 확인
+제출 규칙에 맞는 접근 권한 확인과 링크 제출
 
-기존 '과제제출자료' 폴더의 문서를 통합한다면, 기존 README와 docs의 필요한 내용을
-먼저 보관하고 새 문서와 비교하여 반영합니다. 이 묶음의 README는 1~3단계를 통합한
-새 문서이므로 기존 1단계 기록과 중복되는 부분이 있습니다.
-개인적으로 추가한 기록이나 다른 단계의 결과는 보존하세요.
-
-3. GitHub 저장소에 배치할 위치
-
-저장소 최상위에 README.md를 놓고 그 옆에 docs 폴더를 둡니다.
-
-저장소/
-  README.md
-  docs/
-    01-environment.md
-    02-terminal-paths.md
-    03-permissions.md
-    04-docker-operations.md
-    evidence/
-      04-docker-session.md
-      05-web-session.md
-    05-custom-image.md
-    images/
-      이미지추가안내.txt
-    troubleshooting.md
-    learning-notes.md
-    submission-checklist.md
-
-README와 docs 폴더 사이의 위치 관계를 유지해야 링크가 작동합니다.
-이 문서 묶음을 만들거나 내려받는 것만으로 GitHub에 자동 업로드되지는 않습니다.
-GitHub 인증과 저장소 연결·업로드는 이후 8단계에서 실제로 확인해야 합니다.
-
-4. 보고서의 기록 기준
-
-사용자가 대화에서 제공한 Windows·WSL2 Ubuntu의 실제 명령과 출력을 사용했습니다.
-개인 컴퓨터명이 포함된 프롬프트를 제거했습니다.
-긴 환경 정보와 홈 폴더 목록은 필요한 부분만 발췌했고 본문에 표시했습니다.
-가상으로 만든 성공 출력이나 스크린샷을 넣지 않았습니다.
-파일과 디렉터리의 초기·제한 후·파일 변경 후·최종 상태를 모두 보존했습니다.
-Git 최초 오류의 원인은 미설치 또는 PATH 문제 중 어느 것인지 확정하지 않았습니다.
-클라우드 환경에서 수행한 Docker 테스트를 사용자의 로컬 실습으로 계산하지 않았습니다.
-4단계는 로컬 PC의 실제 기록으로 추가했습니다.
-전체 실행 기록에서 최초 pull의 다운로드 성공과 후반의 최신 상태 응답을 모두 확인했습니다.
-두 실행을 구분하여 기록했고, hello-world도 실습 전후 2회 성공을 확인했습니다.
-첨부 텍스트는 컴퓨터명·내부 식별자·프록시 주소를 가린 공개용 사본으로 함께 포함했습니다.
-종료 코드 127은 로그로 원인을 확인했고, 137의 세부 원인은 단정하지 않았습니다.
-exec 종료·attach 분리 뒤에도 실행이 유지되는 상태를 실제 ps 출력으로 확인했습니다.
-
-5. 과제 제출 범위
-
-현재까지는 1~7단계 기능 실습과 문서화 자료입니다.
-전체 과제의 최종 결과물은 8단계의
-GitHub/VS Code 연동 증거까지 포함해야 합니다.
-docs/submission-checklist.md에 남은 요구사항을 체크리스트로 정리했습니다.
-
-6. 공개 전 확인
-
-자신의 실제 수행 내용과 일치하는지 읽고 확인합니다.
-새로 추가할 로그와 화면에 토큰, 비밀번호, 개인키, 인증 코드가 없는지 확인합니다.
-실제 인증정보를 노출했다면 삭제만 하지 말고 해당 정보를 폐기·재발급하고 이력도 점검합니다.
-GitHub에 반영한 뒤 링크와 이미지, 저장소 접근 권한을 다시 확인합니다.
-
-7. 실습 컨테이너 정리 방법
-
-수집된 마지막 mission4-ubuntu 조회 결과는 실행 중이었습니다.
-실습 후 중지하려면 WSL Ubuntu에서 아래 명령을 실행할 수 있습니다.
-
-docker stop mission4-ubuntu
-
-이 명령은 정리 안내이며 추가로 실행했다는 기록은 아직 반영하지 않았습니다.
-
-8. 5단계 소스와 스크린샷 배치
-
-Dockerfile과 .dockerignore, app 폴더를 README.md와 같은 저장소 최상위에 둡니다.
-소스는 실제 cat 출력에서 추출했으며 HTML 257바이트, Dockerfile 58바이트,
-.dockerignore 26바이트로 저장했습니다.
-빌드 명령 입력 줄은 첨부 로그에서 빠져 있어 보고서에서 재현용 명령으로 표시했습니다.
-빌드 성공은 실제 FINISHED 출력과 이미지 목록, 실행·HTTP 응답으로 확인했습니다.
-
-대화에 첨부한 브라우저 화면은 주소창과 맞춤 페이지가 함께 보여 접속 증거로 적절합니다.
-다만 이 압축본에는 원본 PNG 파일이 들어 있지 않습니다.
-Windows에 저장한 원본을 docs/images/05-web-access.png로 넣고,
-docs/images/이미지추가안내.txt에 따라 보고서에 이미지 링크를 추가하세요.
-이미지 파일이 없는 상태에서 있다고 표시하거나 이미지 예시를 대신 넣지 않았습니다.
-
-6단계에서는 별도 8081번 포트와 바인드 마운트로 호스트 수정 반영을 검증했습니다.
-새 환경에서 재현할 때는 README 마지막의 명령을 사용하고,
-이미 mission-web이 실행 중인 환경에서는 같은 이름과 포트로 반복 실행하지 마세요.
-
-9. 6단계 제출 파일
-
-5단계의 원래 app/index.html은 보존했습니다.
-6단계 수정 후 파일은 examples/step6/app/index.html에 별도로 넣었습니다.
-실제 호스트 파일·컨테이너 내부 파일·HTTP 응답의 내용이 같은 277바이트 HTML입니다.
-
-저장한 두 스크린샷을 다음 위치에 추가하세요.
-docs/images/06-bind-before.png
-docs/images/06-bind-after.png
-
-두 화면은 대화에서 확인됐지만 현재 압축본에는 원본 PNG가 포함되지 않았습니다.
-docs/images/이미지추가안내.txt에 따라 6단계 보고서에 이미지 링크를 추가합니다.
-파일을 추가한 뒤 저장소에서 실제로 표시되는지 확인하세요.
-
-6단계의 초기 cd 실패, ocker 오타, HTML 중복 삽입과 해결 과정도 실제 기록으로 보존했습니다.
-7단계 볼륨 영속성은 검증했고, 8단계 GitHub/VS Code 연동은 아직 별도로 수행해야 합니다.
-
-10. 7단계 기록과 실습 대상
-
-첫 컨테이너: mission7-first / ID 9a7353841aec
-새 검증 컨테이너: mission7-verify / ID 83b287f14feb
-같은 볼륨: mission-data
-파일: /data/record.txt
-동일한 출력: Mission 7 persistent data
-
-중지 상태를 삭제로 기록하지 않고, rm 이후 목록에서 사라진 것을 확인했습니다.
-전체 로그에서 mission7-second는 1회차 삭제 후 생성한 컨테이너임을 확인했습니다.
-1회차 2d37feccfaf1→a62ed3789c49와 2회차 9a7353841aec→83b287f14feb를 구분했습니다.
-새 검증 컨테이너는 읽기 전용 연결로 기존 파일을 읽었습니다.
-현재 묶음은 실행 결과 보고서이며 Docker 볼륨 자체를 백업한 파일은 아닙니다.
-데이터를 보관하려면 mission-data 볼륨을 유지하세요.
-
-실습 후 새 검증 컨테이너를 중지하려면 WSL Ubuntu에서 아래 명령을 사용할 수 있습니다.
-docker stop mission7-verify
-이 명령은 정리 안내이며 추가 실행 결과는 아직 제공되지 않았습니다.
-
-docs/07-volume-persistence.md는 저장할 문서의 상대 경로이며 터미널 명령이 아닙니다.
-다운로드한 실제 Markdown 파일을 저장소 docs 폴더에 넣고 메모장이나 VS Code로 여세요.
+이 안내는 위 작업을 이미 완료했다는 뜻이 아닙니다.
+Git 작성자 설정, VS Code 로그인, 로컬 커밋, 원격 푸시를 구분합니다.
