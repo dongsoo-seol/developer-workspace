@@ -1,6 +1,6 @@
 # 8단계. Git/GitHub 연동 및 제출 소스 재현 검증
 
-> 정리일: 2026-11-08(KST). Git 설정·계정 연결·재현 검증·로컬 커밋까지 실제 확인했다. 최종 main 푸시와 GitHub 웹 확인은 아직 진행 전이므로 완료로 표시하지 않는다.
+> 정리일: 2026-11-08(KST). Git 설정·계정 연결·재현 검증·로컬 커밋까지 실제 확인했다. 문서 보완 커밋 de8e0e5의 main 푸시와 GitHub의 파일·사진 표시를 확인했다. 최종 저장소 화면은 학습자 PC에 저장했다.
 
 ## 1. 목표와 현재 결과
 
@@ -314,17 +314,36 @@ Workspace Trust의 제한 상태를 확인하고 과제 폴더에 Trust를 적�
 
 <a id="publication"></a>
 
-## 11. 최종 게시 확인 — 아직 미수행
+## 11. main 푸시와 GitHub 웹 확인
 
-현재 실제 확인 범위는 로컬 커밋 1edb655까지이다. 문서를 정리한 뒤 main에 푸시하고 다음 결과를 추가한다.
+문서 보완 커밋 de8e0e5를 생성한 뒤 다음 명령을 실행했다.
 
-- 최종 문서 커밋과 실제 푸시 결과
-- GitHub 웹에서 main의 파일·커밋 확인
-- README의 문서·이미지 링크 표시 확인
-- 제출 규칙에 맞는 공개 또는 접근 권한 확인
-- 최종 저장소 링크 제출
+```powershell
+git push origin main
+```
 
-확인 전의 푸시 성공 출력이나 저장소 화면을 만들어 넣지 않는다.
+실제 출력에서 전송 성공을 확인한 부분:
+
+```text
+info: please complete authentication in your browser...
+Writing objects: 100% (50/50), 305.60 KiB | 5.27 MiB/s, done.
+Total 50 (delta 12), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (12/12), done.
+To https://github.com/dongsoo-seol/developer-workspace.git
+   f89744e..de8e0e5  main -> main
+```
+
+인증 안내 뒤 실제 전송 성공 결과가 나왔다. GitHub에서 main의 파일 목록과 README 사진을 확인한 후 학습자는 “파일과 사진이 모두 보입니다”라고 보고했다. 원격 Git에서도 de8e0e5와 그 직전 커밋 1edb655를 확인했다. 원격 main의 PNG 5개도 로컬에서 기록한 파일 크기와 일치했다.
+
+추가로 주소창·저장소 이름·파일 목록이 포함된 화면을 캡처하고 다음 파일로 저장했다고 보고했다.
+
+```text
+docs/images/08-github-repository.png
+```
+
+![GitHub main의 제출 저장소 화면](images/08-github-repository.png)
+
+이 마지막 화면과 최종 확인 문서를 추가 커밋·푸시한다. 위 de8e0e5는 이미 확인한 게시 이력이며, 이후 문서 보완으로 최신 커밋이 바뀔 수 있다. 과제 제출처의 링크 등록과 평가자 접근 권한 확인은 별도로 수행한다.
 
 ## 12. 완료 체크리스트
 
@@ -336,6 +355,9 @@ Workspace Trust의 제한 상태를 확인하고 과제 폴더에 Trust를 적�
 - [x] 재현 컨테이너 중지·삭제
 - [x] 5·6·8단계 PNG 5개 실제 배치
 - [x] 28개 파일의 로컬 커밋 1edb655 확인
-- [ ] 문서 최종 수정의 추가 커밋
-- [ ] main 푸시 성공 및 GitHub 웹 확인
+- [x] 문서 보완 커밋 de8e0e5 확인
+- [x] main 푸시 성공 및 GitHub 웹의 파일·사진 표시 확인
 - [ ] 저장소 접근 권한과 최종 링크 제출
+
+- [x] GitHub 저장소 화면 캡처의 PC 저장 확인
+- [ ] 마지막 화면과 최종 확인 문서의 추가 커밋·푸시
