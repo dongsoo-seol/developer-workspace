@@ -1,36 +1,31 @@
 # 8단계. Git/GitHub 연동 및 제출 소스 재현 검증
 
-## 1. 실습 개요
+> 정리일: 2026-11-08(KST). Git 설정·계정 연결·재현 검증·로컬 커밋까지 실제 확인했다. 최종 main 푸시와 GitHub 웹 확인은 아직 진행 전이므로 완료로 표시하지 않는다.
 
-Git 작성자 정보와 기본 브랜치를 설정하고, GitHub 원격 저장소와
-VS Code의 GitHub 계정 연결을 확인했다.
+## 1. 목표와 현재 결과
 
-제출 저장소에 배치한 Dockerfile과 HTML로 이미지를 다시 빌드하고,
-별도 컨테이너와 포트에서 웹 서버가 정상적으로 동작하는지 검증했다.
+Git 작성자 정보와 기본 브랜치를 설정하고 원격 저장소·VS Code 계정 연결을 확인했다. 로컬 저장소에 넣은 제출 소스로 웹 서버를 다시 빌드해 HTTP 응답과 브라우저 접속을 검증하고 재현용 컨테이너를 정리했다. 보고서·소스·이미지 등 28개 파일을 로컬 커밋 1edb655로 보관했다.
 
-현재 커밋·푸시와 GitHub 웹의 최종 제출 확인은 진행 전이다.
-실제 수행 후 해당 결과를 추가한다.
+아래 내용은 학습자가 제공한 실제 명령·출력, 화면, 수행 확인에 근거한다. 개인정보 값은 공유받지 않았으며 임의의 작성자 이름·이메일을 출력 예시로 만들지 않았다.
 
 ## 2. 실행 환경
 
 | 항목 | 확인 결과 |
 |---|---|
-| Windows | Windows 10 Pro |
-| Git 명령 실행 | Windows PowerShell |
-| Git 버전 | 2.56.0.windows.4 |
-| 편집 도구 | Visual Studio Code |
-| Docker 작업 환경 | WSL2 Ubuntu |
-| 로컬 저장소 | C:\Users\user\developer-workspace |
+| OS | Windows 10 Pro |
+| Git 명령 | Windows PowerShell, Windows Git 2.56.0.windows.4 |
+| 편집기 | Windows Visual Studio Code |
+| Docker 작업 | WSL2 Ubuntu / Docker Desktop |
+| 저장소 | C:\Users\user\developer-workspace |
+| WSL 경로 | /mnt/c/Users/user/developer-workspace |
 | 현재 브랜치 | main |
 | 원격 저장소 | dongsoo-seol/developer-workspace |
 
-## 3. Git 설정 확인
+<a id="git-config"></a>
 
-### 작성자 정보
+## 3. Git 설정과 안전한 출력 기록
 
-현재 저장소에 작성자 이름과 이메일을 설정했다.
-사용자가 로컬에서 설정 목록을 확인했으며, 개인정보 값은
-대화와 보고서에 공개하지 않았다.
+작성자 이름·이메일을 현재 저장소에 설정했다. 학습자가 로컬 조회와 설정 목록 확인을 완료했다고 보고했다. 실제 개인정보 값은 보고서에서 공개하지 않는다.
 
 확인에 사용한 명령:
 
@@ -39,9 +34,7 @@ git config --get user.name
 git config --get user.email
 ```
 
-### 새 저장소의 기본 브랜치
-
-실행 명령:
+기본 브랜치 설정 및 확인:
 
 ```powershell
 git config --global init.defaultBranch main
@@ -54,39 +47,49 @@ git config --global --get init.defaultBranch
 main
 ```
 
-이 설정은 앞으로 새로 만드는 저장소의 기본값이다.
-현재 저장소의 브랜치도 별도로 main임을 확인했다.
+이 설정은 앞으로 만드는 저장소의 기본값이다. 기존 과제 저장소의 현재 브랜치 main은 git status에서도 별도로 확인했다.
 
-### 전체 설정 목록
+전체 목록은 로컬에서 검토한 뒤, 제출용으로 필수 설정 행만 발췌하고 값을 가렸다.
 
-확인에 사용한 명령:
+실제 저장 명령:
 
 ```powershell
-git --no-pager config --list
+git --no-pager config --list | Select-String '^(user\.name|user\.email|init\.defaultbranch|remote\.origin\.(url|fetch))=' | ForEach-Object { $_ -replace '=.*$', '=[값 마스킹]' } | Set-Content -Encoding UTF8 .\docs\evidence\08-git-config-masked.txt
 ```
 
-사용자가 설정 목록 확인을 완료했다.
-제출용으로 마스킹한 실제 설정 출력은 추가로 기록한다.
-이름·이메일·인증정보의 원문을 임의로 재작성하지 않는다.
+실제 저장 파일 조회 결과:
 
-## 4. 원격 저장소 연결
+```text
+init.defaultbranch=[값 마스킹]
+init.defaultbranch=[값 마스킹]
+remote.origin.url=[값 마스킹]
+remote.origin.fetch=[값 마스킹]
+user.name=[값 마스킹]
+user.email=[값 마스킹]
+```
 
-실행 명령:
+[마스킹한 실제 설정 출력 파일](evidence/08-git-config-masked.txt)
+
+두 번 나온 init.defaultbranch도 실제 출력 그대로 보존했다. 이 발췌에는 설정 출처가 표시되지 않으므로 각 행의 범위를 임의로 단정하지 않는다. main 값은 앞의 개별 조회 결과로 확인했다.
+
+<a id="remote"></a>
+
+## 4. 원격 연결과 자료 수신
+
+실제 원격 조회:
 
 ```powershell
 git remote -v
 ```
 
-실제 확인 결과:
+실제 출력:
 
 ```text
 origin  https://github.com/dongsoo-seol/developer-workspace.git (fetch)
 origin  https://github.com/dongsoo-seol/developer-workspace.git (push)
 ```
 
-준비된 자료는 별도 전달용 브랜치에서 가져왔다.
-
-실행 명령:
+준비된 자료는 별도 전달용 브랜치에서 받아 main 작업 폴더에 배치했다.
 
 ```powershell
 git fetch origin
@@ -94,45 +97,33 @@ git restore --source=origin/codex/submission-delivery-20261107 -- .
 git status
 ```
 
-실제 결과에서 README.md, Dockerfile, app, docs, examples 등의
-새 파일을 확인했다.
+fetch에서 새 원격 추적 브랜치를 확인했고, restore 후 README·Dockerfile·app·docs·examples 등이 Untracked files로 표시됐다. 이는 커밋에 아직 포함하지 않은 파일이라는 뜻이다.
 
-Untracked files는 아직 커밋 대상으로 추가하지 않은 파일이라는
-뜻이며 오류가 아니다.
+전달용 브랜치의 보조 커밋을 학습자 자신의 최종 main 커밋으로 취급하지 않았다. 학습자는 본인 PC에서 작성자 설정 후 별도 커밋을 만들었다.
 
-전달용 브랜치의 커밋과 학습자가 main에 만드는 최종 커밋은
-구분한다. 현재 자료 수신만으로 최종 제출이 끝난 것은 아니다.
+<a id="vscode"></a>
 
 ## 5. VS Code와 GitHub 연결
 
-다음 과정을 수행했다.
+시작 메뉴로 VS Code를 실행해 과제 폴더를 열고 소스 제어의 변경 목록을 확인했다. 공식 게시자 GitHub의 GitHub Pull Requests 확장을 사용했다.
 
-1. VS Code에서 developer-workspace 폴더를 열었다.
-2. 소스 제어 화면에서 변경 파일 목록을 확인했다.
-3. 공식 GitHub Pull Requests 확장을 확인했다.
-4. 폴더의 Restricted Mode를 해제하고 과제 폴더를 신뢰했다.
-5. 확장의 Sign in을 선택하고 GitHub 로그인을 허용했다.
-6. 로그인 안내 대신 Pull Requests와 My Issues 목록이
-   표시되는 것을 확인했다.
+처음에는 Restricted Mode였으므로 과제 폴더에 Trust를 적용했다. You trust this folder를 확인한 뒤 확장 로그인 요청을 Allow로 허용했다. 인증 후 로그인 안내 대신 Pull Requests·My Issues 목록이 나타났다.
 
-로그인 후 화면:
+![VS Code GitHub 로그인 및 저장소 작업 화면](images/08-vscode-github.png)
 
-![VS Code의 GitHub 연결 확인](images/08-vscode-github.png)
+이미지 저장 위치를 찾는 과정에서 직접 경로를 지정한 복사가 실패했지만, 실제 검색된 파일 객체를 복사하여 대상 폴더에 146,620바이트 파일이 있는 것을 확인했다. 실패 원인을 숨은 문자나 특정 서비스 문제로 확정하지 않는다.
 
-이미지 파일을 저장소의 docs/images 폴더로 복사한 결과,
-08-vscode-github.png가 146,620바이트로 확인됐다.
+<a id="reproduction"></a>
 
-## 6. 제출 소스를 이용한 재현 검증
+## 6. 제출 소스를 이용한 웹 서버 재현
 
-### 작업 위치 확인
-
-Windows 저장소 폴더에서 WSL Ubuntu를 실행했다.
+Windows 저장소에서 WSL Ubuntu를 열었다.
 
 ```powershell
 wsl -d Ubuntu
 ```
 
-Ubuntu에서 확인한 명령:
+Ubuntu에서 현재 위치와 제출 파일을 확인했다.
 
 ```bash
 pwd
@@ -145,17 +136,15 @@ ls -la
 /mnt/c/Users/user/developer-workspace
 ```
 
-목록에서 Dockerfile, app, docs 등의 제출 파일을 확인했다.
-
 ### 이미지 빌드
 
-재현 검증용으로 사용한 빌드 명령:
+재현에 안내되어 사용한 명령:
 
 ```bash
 docker build -t mission-web:repro .
 ```
 
-제공된 실제 빌드 출력에서 다음을 확인했다.
+제공된 실제 빌드 출력 중 핵심 발췌:
 
 ```text
 CACHED [2/2] COPY app/ /usr/share/nginx/html/
@@ -163,12 +152,9 @@ naming to docker.io/library/mission-web:repro
 unpacking to docker.io/library/mission-web:repro
 ```
 
-위 출력은 핵심 부분만 발췌했다.
-CACHED는 이전에 유효하게 만든 빌드 결과를 재사용했다는 뜻이다.
+출력의 앞부분과 표시 간격은 생략했다. CACHED는 유효한 이전 빌드 결과를 재사용했다는 뜻이다.
 
 ### 컨테이너 실행
-
-기존 8080·8081번 포트와 구분하여 8082번을 사용했다.
 
 실제 실행 명령:
 
@@ -177,19 +163,19 @@ docker run -d --name mission-web-repro -p 8082:80 mission-web:repro
 docker ps
 ```
 
-확인된 실행 상태:
+기존 8080·8081과 구분하여 8082번을 사용했다.
 
 | 항목 | 실제 결과 |
 |---|---|
-| 컨테이너 이름 | mission-web-repro |
-| 컨테이너 ID | ffc5b7a375e8 |
+| 컨테이너 | mission-web-repro |
+| ID | ffc5b7a375e8 |
 | 이미지 | mission-web:repro |
 | 상태 | Up 17 seconds |
-| 포트 연결 | 8082 → 80 |
+| 포트 | 8082 → 80 |
 
-### HTTP 응답 확인
+### HTTP 요청과 응답
 
-실제 실행 명령:
+실제 요청:
 
 ```bash
 curl -i http://localhost:8082
@@ -217,38 +203,30 @@ Accept-Ranges: bytes
 <p>This page was built with Docker.</p>
 ```
 
-HTTP 200과 직접 작성한 HTML이 함께 확인됐다.
-응답 시각은 한국 시각으로 2026-11-07 23:43:08이다.
+HTTP 200뿐 아니라 작성한 HTML이 응답에 포함된 것을 확인했다. 응답 시각은 2026-11-07 23:43:08 KST이다. 보고서 정리일과 실제 실습 시각을 구분한다.
 
-이번 검증은 제출 소스로 웹 서버 기능을 재현한 결과이다.
-이미지와 응답이 이전 실습과 바이트 단위로 완전히 같다는
-검증으로 확대해서 설명하지 않는다.
+![저장소 소스로 다시 실행한 웹 서버와 접속 주소](images/08-repro-web.png)
 
-### 브라우저 확인
+5단계의 257바이트와 달리 이번 응답은 269바이트였으며 실제 값을 그대로 기록했다. Windows 작업 파일의 줄바꿈 등으로 바이트 수는 달라질 수 있다. 이번 검증은 동일한 페이지 기능을 재현한 것이며 비트 단위로 동일한 이미지를 증명한 실험은 아니다.
 
-Windows 브라우저에서 localhost:8082에 접속했다.
-주소창과 직접 작성한 페이지가 함께 표시되는 것을 확인했다.
-
-![제출 소스로 재현한 웹 서버](images/08-repro-web.png)
+<a id="cleanup"></a>
 
 ## 7. 재현 실습 자원 정리
 
-실제 실행 명령:
+실제 수행:
 
 ```bash
 docker stop mission-web-repro
 docker rm mission-web-repro
 ```
 
-두 명령에서 각각 확인한 출력:
+두 명령의 실제 출력은 각각 다음과 같았다.
 
 ```text
 mission-web-repro
 ```
 
-재현 실습용 컨테이너를 중지·삭제했다.
-
-그 후 다음 명령으로 Ubuntu에서 PowerShell로 돌아왔다.
+재현용 컨테이너를 중지·삭제했다. 이후 Ubuntu를 종료하고 PowerShell로 돌아왔다.
 
 ```bash
 exit
@@ -260,73 +238,104 @@ exit
 logout
 ```
 
-이후 PowerShell의 저장소 경로로 돌아온 것을 확인했다.
+<a id="local-commit"></a>
 
-## 8. 수행 중 문제와 해결
+## 8. 증거 파일 배치와 로컬 커밋
 
-### VS Code 실행 명령 미인식
+학습자 PC의 저장소에 다음 PNG 5개가 배치된 것을 파일 목록으로 확인했다.
 
-- 문제: PowerShell에서 code 명령을 찾지 못했다.
-- 확인: Windows 시작 메뉴에서는 VS Code가 검색됐다.
-- 대안: 시작 메뉴로 VS Code를 실행하고 폴더 열기로
-  과제 저장소를 열었다.
-- 결과: 파일 목록과 소스 제어의 변경 사항을 확인했다.
-- 범위: code 명령의 PATH 설정 자체를 수정하거나
-  재검증한 것은 아니다.
+| 파일 | 용도 | 제공된 크기 |
+|---|---|---:|
+| 05-web-access.png | 5단계 웹 접속 | 17,344바이트 |
+| 06-bind-before.png | 바인드 수정 전 | 18,461바이트 |
+| 06-bind-after.png | 바인드 수정 후 | 20,891바이트 |
+| 08-vscode-github.png | VS Code GitHub 연결 | 146,620바이트 |
+| 08-repro-web.png | 제출 소스 재현 | 35,542바이트 |
 
-### Restricted Mode로 일부 기능 제한
+실제 파일 선택과 검토:
 
-- 문제: VS Code에 Restricted Mode 안내가 표시됐다.
-- 확인: Workspace Trust 화면에서 제한 상태를 확인했다.
-- 해결: 과제 폴더에 Trust를 적용했다.
-- 결과: You trust this folder가 표시됐고,
-  이후 GitHub 로그인 화면과 인증 후 목록을 확인했다.
+```powershell
+git add README.md Dockerfile .dockerignore app docs examples 제출안내.txt
+git --no-pager diff --cached --stat
+```
 
-### 로그인 증거 이미지의 저장 위치 문제
+실제 요약:
 
-- 문제: 지정한 저장소 경로에서 사진을 찾지 못했다.
-- 확인: 파일 검색을 진행했고, 직접 경로 지정 복사도
-  한 차례 실패했다.
-- 해결: 실제 검색된 파일 객체를 사용해 대상 폴더로 복사했다.
-- 결과: docs/images에서 08-vscode-github.png,
-  146,620바이트를 확인했다.
-- 범위: 앞선 검색 경로와 복사 실패가 불일치했던
-  정확한 원인은 확정하지 않았다.
+```text
+28 files changed, 4975 insertions(+)
+```
 
-## 9. Git과 GitHub의 역할
+실제 커밋과 조회:
+
+```powershell
+git commit -m "실습 자료와 검증 증거 저장"
+git --no-pager log -1 --oneline
+```
+
+실제 결과:
+
+```text
+[main 1edb655] 실습 자료와 검증 증거 저장
+28 files changed, 4975 insertions(+)
+1edb655 (HEAD -> main) 실습 자료와 검증 증거 저장
+```
+
+이 커밋은 문서 최종 수정 전의 보관용 커밋이다. 이후 문서 변경은 추가 커밋으로 남길 수 있다. 로컬 커밋 성공을 원격 푸시 성공으로 간주하지 않는다.
+
+<a id="troubleshooting"></a>
+
+## 9. 트러블슈팅
+
+### code 명령 미인식
+
+PowerShell에서 code 명령을 찾지 못했지만 시작 메뉴에서는 VS Code가 검색됐다. GUI로 실행하고 폴더 열기를 사용하여 저장소 파일과 소스 제어 목록을 확인했다. code 명령의 PATH 수정 자체를 재검증한 것으로 기록하지 않는다.
+
+### Restricted Mode에서 일부 기능 제한
+
+Workspace Trust의 제한 상태를 확인하고 과제 폴더에 Trust를 적용했다. You trust this folder를 확인한 뒤 공식 확장 로그인과 인증 후 목록을 확인했다.
+
+### 자료 ZIP 다운로드 실패
+
+아티팩트 다운로드가 실패하여 로컬 PC에서 ZIP을 찾을 수 없었다. 같은 UI를 반복하는 대신, 동의를 받고 별도 전달용 브랜치에 자료를 준비했다. Git fetch·restore로 실제 파일을 받아 새 파일 목록이 나타난 것을 확인했다. 이 오류를 GitHub 업로드 권한 문제와 혼동하지 않았다.
+
+### 사진 저장 위치와 복사
+
+지정 경로의 Test-Path가 False였고 직접 경로 복사도 실패했다. 파일을 검색한 뒤 실제 파일 객체를 복사하는 방식으로 해결하고 대상 폴더의 파일명·크기를 확인했다. 5·6단계 사진은 바탕 화면의 코디세이 폴더에서 찾아 함께 복사했다.
+
+## 10. Git과 GitHub 역할
 
 | 구분 | Git | GitHub |
 |---|---|---|
-| 역할 | 로컬 변경 이력 관리 | 원격 저장소 보관과 협업 |
+| 역할 | 로컬 변경 이력 관리 | 원격 저장소 보관·협업 |
 | 주요 작업 | add, commit, log | 원격 공유, PR, 이슈 |
-| 관계 | 커밋을 로컬에 저장 | push로 커밋을 전달받음 |
+| 관계 | 커밋을 로컬에 저장 | push로 커밋 전달 |
 
-작성자 이름·이메일 설정은 GitHub 로그인과 별개이다.
-커밋만으로 GitHub 업로드가 완료되지는 않는다.
+작성자 정보 설정과 GitHub 로그인은 별개이다. fetch로 받은 자료와 최종 main 푸시도 구분한다.
 
-## 10. 최종 커밋·푸시 및 웹 확인
+<a id="publication"></a>
 
-아직 실제 수행하지 않았다.
-수행 후 다음 증거를 추가한다.
+## 11. 최종 게시 확인 — 아직 미수행
 
-- 커밋 명령과 실제 결과
-- 푸시 명령과 성공 결과
-- GitHub 웹에서 파일과 커밋이 보이는 화면
-- README의 문서·이미지 링크 확인 결과
-- 과제 제출 규칙에 맞는 저장소 접근 권한 확인
+현재 실제 확인 범위는 로컬 커밋 1edb655까지이다. 문서를 정리한 뒤 main에 푸시하고 다음 결과를 추가한다.
 
-## 11. 완료 체크리스트
+- 최종 문서 커밋과 실제 푸시 결과
+- GitHub 웹에서 main의 파일·커밋 확인
+- README의 문서·이미지 링크 표시 확인
+- 제출 규칙에 맞는 공개 또는 접근 권한 확인
+- 최종 저장소 링크 제출
 
-- [x] Git 작성자 정보 설정 및 로컬 확인
-- [x] 기본 브랜치 main 설정
-- [x] 원격 저장소 연결 확인
-- [x] VS Code의 GitHub 로그인 확인
-- [x] 로그인 증거 이미지의 실제 저장 위치 확인
-- [x] 제출 소스로 이미지 재빌드
-- [x] 새 컨테이너에서 HTTP·브라우저 검증
-- [x] 재현 실습용 컨테이너 정리
-- [ ] 마스킹한 실제 Git 설정 출력 추가
-- [ ] 이전 단계의 제출용 이미지 파일 배치 확인
-- [ ] 본인 작성자 정보로 최종 커밋·푸시
-- [ ] GitHub 웹에서 최종 파일·문서·이미지 확인
-- [ ] 저장소 링크로 최종 제출
+확인 전의 푸시 성공 출력이나 저장소 화면을 만들어 넣지 않는다.
+
+## 12. 완료 체크리스트
+
+- [x] Git 작성자·기본 브랜치 설정 확인
+- [x] 실제 설정 출력의 필수 항목 발췌·마스킹·저장
+- [x] 원격 저장소 연결과 전달용 자료 수신
+- [x] VS Code GitHub 로그인과 증거 파일 배치
+- [x] 제출 소스로 빌드·실행·HTTP·브라우저 검증
+- [x] 재현 컨테이너 중지·삭제
+- [x] 5·6·8단계 PNG 5개 실제 배치
+- [x] 28개 파일의 로컬 커밋 1edb655 확인
+- [ ] 문서 최종 수정의 추가 커밋
+- [ ] main 푸시 성공 및 GitHub 웹 확인
+- [ ] 저장소 접근 권한과 최종 링크 제출

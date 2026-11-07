@@ -1,6 +1,6 @@
-# 개발 워크스테이션 구축 — 1~7단계 수행 보고서
+# 개발 워크스테이션 구축 — 실습 보고서 및 최종 제출 준비
 
-> 정리일: 2026-11-07, KST. 환경 점검·터미널·권한·Docker 운영·웹 서버·바인드 마운트·볼륨 영속성 결과를 정리했다. 1~7단계 기능 실습은 확인됐고 8단계는 아직 완료되지 않았다. 브라우저 화면은 대화에서 확인했으며 원본 PNG의 제출 폴더 배치는 남아 있다.
+> 정리일: 2026-11-08(KST). 1~7단계와 8단계의 Git 설정·VS Code 인증·재현 검증·로컬 커밋까지 확인했다. 사진 5개와 마스킹한 설정 증거도 학습자 PC에 배치했다. 최종 main 푸시·GitHub 웹 검증·제출은 아직 진행 전이다.
 
 ## 1. 프로젝트 개요
 
@@ -42,7 +42,7 @@ Git 버전은 Windows에서 확인한 결과이며, Ubuntu 안의 Git 설치 여
 - [x] 7단계: Docker 볼륨 데이터 영속성 검증
 - [ ] 8단계: Git 설정·GitHub·VS Code 연동 및 최종 제출
 
-웹 서버 접속, 바인드 마운트 변경 반영, 컨테이너 삭제 후 볼륨 데이터 유지까지 확인했다. GitHub 연동·업로드 완료는 아직 확인되지 않았다.
+웹 서버 접속, 바인드 마운트 변경 반영, 컨테이너 삭제 후 볼륨 데이터 유지까지 확인했다. VS Code의 GitHub 인증과 로컬 커밋까지 확인했다. 최종 main 업로드와 GitHub 웹 확인은 남아 있다.
 
 ## 4. 현재까지의 핵심 결과
 
@@ -156,7 +156,7 @@ ubuntu:24.04를 최초로 가져올 때 Downloaded newer image 응답을 확인�
 
 소스: [Dockerfile](Dockerfile), [HTML](app/index.html), [.dockerignore](.dockerignore)
 
-브라우저 PNG는 현재 묶음에 포함되지 않았다. [이미지 추가 안내](docs/images/이미지추가안내.txt)에 따라 저장한 파일을 넣으면 문서에 표시할 수 있다.
+브라우저 PNG는 학습자 PC의 docs/images에 배치했다. 보고서에서 이미지 파일을 직접 연결한다.
 
 ### 4-6. 포트 매핑과 바인드 마운트 검증
 
@@ -175,7 +175,7 @@ ubuntu:24.04를 최초로 가져올 때 Downloaded newer image 응답을 확인�
 
 [6단계 보고서](docs/06-port-bind-mount.md), [전체 실행 증거](docs/evidence/06-bind-session.md), [수정 후 HTML](examples/step6/app/index.html)
 
-수정 전후 PNG는 대화에서 확인했지만 압축본에는 포함되지 않았다. docs/images/06-bind-before.png와 06-bind-after.png를 저장한 뒤 보고서에 표시해야 한다.
+수정 전후 PNG는 학습자 PC의 docs/images/06-bind-before.png와 06-bind-after.png에 배치한 것을 확인했고 6단계 보고서에서 직접 연결했다.
 
 ### 4-7. 이름 있는 볼륨 데이터 영속성
 
@@ -195,6 +195,22 @@ mission-data 볼륨에 파일을 저장한 첫 컨테이너를 삭제하고, 새
 [7단계 상세 보고서](docs/07-volume-persistence.md), [삭제 증거](docs/07-volume-persistence.md#delete), [재연결·데이터 비교](docs/07-volume-persistence.md#comparison)
 
 [7단계 전체 실행 기록](docs/evidence/07-volume-session.md)에는 두 회차가 있다. 최초 작성 컨테이너 2d37feccfaf1을 삭제한 뒤 a62ed3789c49에서 읽기에 성공했고, 후속 작성 컨테이너 9a7353841aec를 삭제한 뒤 83b287f14feb에서 읽기 전용 검증에도 성공했다. 위 표는 후속 회차를 기준으로 한다.
+
+### 4-8. Git/GitHub 연결과 제출 소스 재현
+
+Windows Git 작성자·기본 브랜치를 설정하고, 필수 설정 행을 발췌해 모든 값을 마스킹한 실제 출력 파일을 만들었다. 공식 GitHub Pull Requests 확장으로 인증 후 목록을 확인했다.
+
+제출 저장소에서 mission-web:repro를 빌드해 8082번에서 HTTP 200과 맞춤 HTML·브라우저 화면을 확인했다. 재현용 컨테이너를 중지·삭제하고 PowerShell로 돌아왔다.
+
+| 항목 | 실제 확인 결과 |
+|---|---|
+| 재현 컨테이너 | mission-web-repro, ffc5b7a375e8 |
+| 응답 | HTTP 200, Content-Length 269, 직접 작성한 HTML |
+| 로컬 커밋 | 1edb655 — 실습 자료와 검증 증거 저장 |
+| 커밋 범위 | 28 files changed, 4975 insertions(+) |
+| 남은 검증 | 최종 문서 커밋·main 푸시·GitHub 웹 확인 |
+
+[8단계 상세 보고서](docs/08-git-github-submission.md), [마스킹한 실제 설정 출력](docs/evidence/08-git-config-masked.txt)
 
 ## 5. 요구사항별 검증 방법 및 증거 위치
 
@@ -224,6 +240,9 @@ mission-data 볼륨에 파일을 저장한 첫 컨테이너를 삭제하고, 새
 | 재생성 없이 유지 | 같은 ID, 이어지는 Up 시간, 실제 명령 흐름 | [컨테이너 확인](docs/06-port-bind-mount.md#identity) |
 | 볼륨 생성·저장 | 이름·연결 경로·파일 작성 및 내용 조회 | [볼륨](docs/07-volume-persistence.md#volume), [삭제 전 데이터](docs/07-volume-persistence.md#write) |
 | 삭제 후 데이터 유지 | 첫 컨테이너 삭제, 볼륨 존속, 새 ID에서 같은 내용 조회 | [삭제](docs/07-volume-persistence.md#delete), [새 컨테이너](docs/07-volume-persistence.md#verify), [읽기](docs/07-volume-persistence.md#read) |
+| Git 설정·인증 | 마스킹 설정 파일, VS Code 인증 후 화면 | [설정](docs/08-git-github-submission.md#git-config), [VS Code](docs/08-git-github-submission.md#vscode) |
+| 제출 소스 재현·정리 | 저장소 빌드·8082 응답·브라우저·stop/rm | [재현](docs/08-git-github-submission.md#reproduction), [정리](docs/08-git-github-submission.md#cleanup) |
+| 로컬 커밋 | 28개 파일의 커밋 1edb655 확인 | [커밋 기록](docs/08-git-github-submission.md#local-commit) |
 | 트러블슈팅 2건 이상 | 문제→가설→확인→해결/대안→재검증 | [트러블슈팅](docs/troubleshooting.md) |
 
 ## 6. 트러블슈팅 요약
@@ -267,12 +286,19 @@ docs/
 ├── 05-custom-image.md
 ├── 06-port-bind-mount.md
 ├── 07-volume-persistence.md
+├── 08-git-github-submission.md
 ├── evidence/
 │   ├── 04-docker-session.md
 │   ├── 05-web-session.md
 │   ├── 06-bind-session.md
-│   └── 07-volume-session.md
+│   ├── 07-volume-session.md
+│   └── 08-git-config-masked.txt
 ├── images/
+│   ├── 05-web-access.png
+│   ├── 06-bind-before.png
+│   ├── 06-bind-after.png
+│   ├── 08-vscode-github.png
+│   ├── 08-repro-web.png
 │   └── 이미지추가안내.txt
 ├── troubleshooting.md
 ├── learning-notes.md
@@ -289,17 +315,19 @@ docs/
 - 실제로 수행하지 않은 컨테이너 실행·접속·인증 결과를 만들지 않았다.
 - 다른 사용자 계정으로 접근 차단을 시험한 기록은 없으므로, 권한 실험은 소유자의 권한 변경과 표시 확인 범위로 보고했다.
 
-## 10. 다음 단계와 최종 제출 상태
+## 10. 최종 제출 전 남은 확인
 
-현재 1~7단계의 기능 실습과 보고서를 정리했다. 전체 과제의 최종 제출을 위해서는 아래 증거와 파일 정리가 추가로 필요하다.
+현재 자료는 로컬 커밋 1edb655로 보관했다. 사진 5개와 실제 마스킹 설정 출력을 배치했고, 보고서의 증거 링크를 정리하고 있다. 최종 게시 전 다음 작업을 마무리한다.
 
-- 이미 확인한 브라우저 접속 화면의 원본 PNG를 제출 폴더에 배치
-- Git 사용자 정보·기본 브랜치 설정과 안전하게 정리한 설정 출력
-- GitHub·VS Code 연동 및 푸시 결과, 저장소 접근 권한 확인
+- 문서 수정 내용을 검토하고 추가 커밋
+- main 푸시의 실제 성공 결과 확인
+- GitHub 웹의 main에서 파일·커밋·문서·이미지 표시 확인
+- 과제 규칙에 맞는 공개 또는 접근 권한 확인
+- 저장소 링크 제출
 
-제출 대상 저장소: https://github.com/dongsoo-seol/developer-workspace
+제출 대상: https://github.com/dongsoo-seol/developer-workspace
 
-본 자료의 작성은 GitHub 업로드나 공개 설정 완료를 의미하지 않는다. 업로드 후 README와 상세 문서의 링크를 확인해야 한다. [현재 산출물 점검표와 전체 과제의 남은 항목](docs/submission-checklist.md)을 함께 사용한다.
+로컬 커밋이나 전달용 브랜치 게시만으로 최종 main 제출이 완료됐다고 간주하지 않는다. [제출 점검표](docs/submission-checklist.md)를 함께 확인한다.
 
 ## 11. 웹 서버 재현 방법 — 새 환경용
 
@@ -314,3 +342,22 @@ curl -i http://localhost:8080
 ```
 
 확인 기준은 HTTP 200과 My Docker Web Server 문구이다. 원래 빌드는 stable-alpine 태그를 사용했으며 실제 digest는 5단계 보고서에 기록했다. 나중에 태그가 갱신될 수 있으므로 비트 단위로 동일한 베이스가 자동 보장되는 것은 아니다.
+
+
+## 12. 실제 증거 화면
+
+### 5단계 웹 서버
+
+![5단계 맞춤 웹 서버와 주소창](docs/images/05-web-access.png)
+
+### 6단계 바인드 마운트 수정 전후
+
+![6단계 수정 전](docs/images/06-bind-before.png)
+
+![6단계 수정 후](docs/images/06-bind-after.png)
+
+### 8단계 GitHub 연결과 재현
+
+![VS Code GitHub 연결](docs/images/08-vscode-github.png)
+
+![저장소 소스로 재현한 8082 웹 서버](docs/images/08-repro-web.png)
