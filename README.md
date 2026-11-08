@@ -2,6 +2,8 @@
 
 > 정리일: 2026-11-08(KST). 1~7단계와 8단계의 Git 설정·VS Code 인증·재현 검증·로컬 커밋까지 확인했다. 사진 5개와 마스킹한 설정 증거도 학습자 PC에 배치했다. main 푸시(de8e0e5)와 GitHub의 파일·사진 표시를 확인했다. 최종 확인 문서와 저장소 화면을 추가 반영한 뒤 과제 제출처에 링크를 제출한다.
 
+> **평가 항목 16 보완(2026-11-08):** 포트 충돌 재현 → 점유 PID·프로세스 확인 → 컨테이너 중지로 포트 해제 → 재생성 후 HTTP 200 검증을 [README의 단계별 기록](#evaluation-16-port-conflict)에 추가했다. 재평가 결과는 아직 확인 전이다.
+
 ## 1. 프로젝트 개요
 
 터미널, Docker, Git/GitHub를 활용하여 재현 가능한 개발 환경을 구축하는 미션이다. 환경 확인에서 시작하여 파일·경로·권한을 익히고, 이후 웹 서버 컨테이너 제작과 네트워크·스토리지 연결, GitHub 공유까지 확장하는 것을 목표로 한다.
@@ -237,6 +239,7 @@ Windows Git 작성자·기본 브랜치를 설정하고, 필수 설정 행을 �
 | 커스텀 베이스·소스 | 공식 출처·digest·HTML·Dockerfile 확인 | [베이스](docs/05-custom-image.md#base), [소스](docs/05-custom-image.md#source) |
 | 웹 서버 빌드·실행 | 빌드 완료·이미지·컨테이너·로그 확인 | [빌드](docs/05-custom-image.md#build), [실행](docs/05-custom-image.md#run) |
 | 웹 응답·브라우저 | HTTP 200과 맞춤 HTML, 주소창 포함 화면 | [HTTP](docs/05-custom-image.md#http), [화면 상태](docs/05-custom-image.md#browser) |
+| 포트 충돌 진단·해제 | Windows PID·프로세스와 Docker 점유 대조, 중지 후 부재 확인, 재생성 후 실제 포트·HTTP 200 | [평가 항목 16 단계별 실행 기록](#evaluation-16-port-conflict), [별도 증거 문서](docs/evidence/16-port-conflict-session.md) |
 | 바인드 연결 | inspect의 bind·Source·Destination·RW 확인 | [마운트 정보](docs/06-port-bind-mount.md#mount) |
 | 변경 반영 | 호스트·컨테이너 파일, HTTP 본문, 화면 비교 | [수정 전후](docs/06-port-bind-mount.md#comparison) |
 | 재생성 없이 유지 | 같은 ID, 이어지는 Up 시간, 실제 명령 흐름 | [컨테이너 확인](docs/06-port-bind-mount.md#identity) |
@@ -363,3 +366,256 @@ curl -i http://localhost:8080
 ### GitHub 저장소 게시 확인
 
 ![main의 제출 파일 목록과 저장소 주소](docs/images/08-github-repository.png)
+
+
+<a id="evaluation-16-port-conflict"></a>
+
+## 13. 평가 항목 16 보완 — 포트 충돌 진단·해제·재검증
+
+**평가에서 요청한 보완:** 포트 충돌 시 점유 프로세스 확인과 포트 해제 절차를 실제 명령·출력과 함께 단계별로 기록한다. 아래는 2026-11-08 Windows PowerShell / Docker Desktop에서 학습자가 수행한 결과이다. 관련 출력만 발췌했고 출력이 없던 조회는 본문에 명시했다.
+
+**핵심 결과:** mission-web의 8080 점유와 Windows의 PID 14720(wslrelay)·12572(com.docker.backend)를 확인했다. mission-web을 중지하자 Docker·Windows 조회에서 점유가 없어졌고, 검증용 컨테이너를 재생성한 뒤 실제 8080→80 연결과 HTTP 200을 확인했다. PID는 당시 값이며 재실행 시 달라질 수 있다.
+
+[별도 실행 증거 문서](docs/evidence/16-port-conflict-session.md)에서도 같은 과정을 확인할 수 있다. Docker Desktop·WSL 중계 프로세스를 강제 종료하지 않고, Docker 목록에서 식별한 해당 컨테이너를 중지했다.
+
+### 13-1. 초기 상태와 8080 포트 점유 준비
+
+```powershell
+docker ps
+Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess
+```
+
+처음 docker ps에는 제목 행만 나왔고, Windows 조회에서도 항목이 없었다. 이어 docker ps -a에서 기존 mission-web(28712a7251bb)의 중지 상태와 8080 설정을 확인했다.
+
+```powershell
+docker start mission-web
+```
+
+```text
+mission-web
+```
+
+```powershell
+docker ps
+```
+
+해당 행에서 확인한 실제 값 발췌:
+
+```text
+CONTAINER ID: 28712a7251bb
+IMAGE: mission-web:v1
+STATUS: Up 13 seconds
+PORTS: 0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+NAMES: mission-web
+```
+
+위는 표 전체의 원형이 아니라 관련 행의 값을 항목별로 발췌한 것이다.
+
+### 13-2. 같은 포트 사용으로 충돌 재현
+
+```powershell
+docker run -d --name mission16-conflict -p 8080:80 mission-web:v1
+```
+
+생성된 컨테이너 ID:
+
+```text
+e0cfe5e5a7581bef24764df49d0d62d88a2677bf647e7e6159a6388729804e88
+```
+
+오류 메시지의 핵심 부분:
+
+```text
+Bind for 0.0.0.0:8080 failed: port is already allocated
+```
+
+컨테이너 ID가 출력됐지만 네트워크 연결은 실패했다. 기존 mission-web이 사용 중인 호스트 8080을 새 컨테이너에도 지정한 것이 충돌 재현 조건이다.
+
+### 13-3. Windows 점유 PID와 프로세스 이름 확인
+
+```powershell
+Get-NetTCPConnection -LocalPort 8080 -State Listen | Select-Object LocalAddress,LocalPort,OwningProcess
+```
+
+```text
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+::1               8080         14720
+::                8080         12572
+127.0.0.1         8080         14720
+```
+
+```powershell
+Get-NetTCPConnection -LocalPort 8080 -State Listen | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Get-Process -Id $_ } | Select-Object Id,ProcessName
+```
+
+```text
+   Id ProcessName
+   -- -----------
+14720 wslrelay
+12572 com.docker.backend
+```
+
+OwningProcess는 수신 중인 항목의 Windows PID이다. 해당 PID의 이름은 WSL·Docker Desktop 관련 중계 프로세스였고, Docker 목록에서는 mission-web의 8080 공개를 확인했다. 두 종류의 조회를 함께 사용해 컨테이너와 호스트의 점유를 진단했다. PID는 당시 값이므로 재실행 시 달라질 수 있다.
+
+### 13-4. 점유 컨테이너 중지와 포트 해제 확인
+
+Docker Desktop 기반 프로세스를 강제 종료하지 않고, 점유 대상으로 확인한 컨테이너만 중지했다.
+
+```powershell
+docker stop mission-web
+```
+
+```text
+mission-web
+```
+
+```powershell
+docker ps --filter publish=8080
+```
+
+```text
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+
+```powershell
+Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,OwningProcess
+```
+
+마지막 조회는 항목 출력 없이 다음 PowerShell 입력 줄로 돌아왔다. Docker의 실행 중 포트 공개 목록과 Windows의 Listen 조회 모두에서 8080 점유가 없어졌음을 확인했다.
+
+### 13-5. 단순 재시작 후에도 실제 포트가 연결되지 않은 중간 결과
+
+```powershell
+docker start mission16-conflict
+```
+
+```text
+mission16-conflict
+```
+
+```powershell
+docker ps --filter name=mission16-conflict
+```
+
+관련 행의 실제 값 발췌:
+
+```text
+CONTAINER ID: e0cfe5e5a758
+STATUS: Up 12 seconds
+PORTS: 80/tcp
+NAMES: mission16-conflict
+```
+
+```powershell
+curl.exe -i http://localhost:8080
+```
+
+```text
+curl: (7) Failed to connect to localhost port 8080 after 2256 ms: Could not connect to server
+```
+
+```powershell
+docker port mission16-conflict
+```
+
+위 docker port 조회는 출력 없이 다음 입력 줄로 돌아왔다.
+
+```powershell
+docker inspect --format '{{json .HostConfig.PortBindings}}' mission16-conflict
+```
+
+```json
+{"80/tcp":[{"HostIp":"","HostPort":"8080"}]}
+```
+
+설정에는 8080→80이 남아 있었지만 실제 공개 포트는 표시되지 않았고 HTTP 접속도 실패했다. 관찰한 사실을 기록하되 Docker 내부에서 이 상태가 발생한 구체적인 원인은 단정하지 않는다. 이번에는 재생성으로 해결했다. Up 표시만으로 포트 연결 성공을 판단할 수 없음을 확인했다.
+
+### 13-6. 실습 컨테이너 재생성으로 포트 연결 복구
+
+이번에 만든 mission16-conflict는 이미지의 정적 페이지를 제공하는 검증용 컨테이너이므로 해당 컨테이너만 중지·삭제하고 재생성했다. 기존 mission-web이나 볼륨은 삭제하지 않았다. 보존할 쓰기 계층 데이터가 있는 일반 컨테이너에 그대로 적용하는 절차는 아니다.
+
+```powershell
+docker stop mission16-conflict
+```
+
+```text
+mission16-conflict
+```
+
+```powershell
+docker rm mission16-conflict
+```
+
+```text
+mission16-conflict
+```
+
+```powershell
+docker run -d --name mission16-conflict -p 8080:80 mission-web:v1
+```
+
+```text
+2778a1811e05ffebe4f9562809841b027cca236d8b689728cc5c132529915c7d
+```
+
+```powershell
+docker port mission16-conflict
+```
+
+```text
+80/tcp -> 0.0.0.0:8080
+80/tcp -> [::]:8080
+```
+
+```powershell
+curl.exe -i http://localhost:8080
+```
+
+실제 응답:
+
+```http
+HTTP/1.1 200 OK
+Server: nginx/1.30.6
+Date: Sun, 08 Nov 2026 12:23:39 GMT
+Content-Type: text/html
+Content-Length: 257
+Last-Modified: Sat, 07 Nov 2026 01:27:14 GMT
+Connection: keep-alive
+ETag: "6aee7e72-101"
+Accept-Ranges: bytes
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>My Docker Web Server</title>
+</head>
+<body>
+    <h1>My Docker Web Server</h1>
+    <p>Mission 5: Nginx custom image</p>
+    <p>This page was built with Docker.</p>
+</body>
+</html>
+```
+
+### 13-7. 판정과 실습 종료 시점 상태
+
+- 충돌 재현: 같은 호스트 8080 사용 요청에서 port is already allocated 확인.
+- 점유 진단: Docker의 mission-web 포트와 Windows PID·프로세스 이름을 함께 확인.
+- 포트 해제: mission-web 중지 뒤 Docker 목록과 Windows Listen 조회의 점유 부재 확인.
+- 중간 실패: 최초 충돌 컨테이너를 start해도 실제 공개 포트가 없고 HTTP 연결 실패.
+- 복구: 실습 컨테이너만 재생성하고 실제 8080→80 공개, HTTP 200과 직접 작성한 HTML 확인.
+- 종료 시점: mission-web은 중지, 새 mission16-conflict(2778a1811e05...)는 8080에 실행 중이다. 그 이후 정리·원상복구까지 수행했다고 기록하지 않는다.
+
+아래는 추가 정리가 필요할 때의 안내이며, 위 실행 로그에 포함된 완료 작업은 아니다. 기록을 모두 저장한 뒤 필요에 따라 수행한다.
+
+```powershell
+docker stop mission16-conflict
+docker rm mission16-conflict
+docker start mission-web
+docker port mission-web
+curl.exe -i http://localhost:8080
+```
+
+기존 컨테이너나 프로세스를 임의 종료할 수 없는 상황에는 다른 빈 호스트 포트를 선택하는 대안이 있다. 예를 들어 -p 8083:80으로 실행하려면 먼저 8083의 점유도 조회해야 한다. 이 대안은 이번 실행 성공 증거가 아니라 대응 방법 설명이다.
