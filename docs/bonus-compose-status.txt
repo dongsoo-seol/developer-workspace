@@ -1,0 +1,2 @@
+﻿NAME                        IMAGE                     COMMAND                   SERVICE   CREATED              STATUS              PORTS
+developer-workspace-web-1   developer-workspace-web   "/docker-entrypoint.??   web       About a minute ago   Up About a minute   127.0.0.1:8082->80/tcp

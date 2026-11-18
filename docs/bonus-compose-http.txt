@@ -1,0 +1,22 @@
+﻿HTTP/1.1 200 OK
+Server: nginx/1.30.6
+Date: Wed, 18 Nov 2026 02:36:37 GMT
+Content-Type: text/html
+Content-Length: 269
+Last-Modified: Sat, 07 Nov 2026 13:08:11 GMT
+Connection: keep-alive
+ETag: "6aef22bb-10d"
+Accept-Ranges: bytes
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>My Docker Web Server</title>
+</head>
+<body>
+    <h1>My Docker Web Server</h1>
+    <p>Mission 5: Nginx custom image</p>
+    <p>This page was built with Docker.</p>
+</body>
+</html>

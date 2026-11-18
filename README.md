@@ -619,3 +619,88 @@ curl.exe -i http://localhost:8080
 ```
 
 기존 컨테이너나 프로세스를 임의 종료할 수 없는 상황에는 다른 빈 호스트 포트를 선택하는 대안이 있다. 예를 들어 -p 8083:80으로 실행하려면 먼저 8083의 점유도 조회해야 한다. 이 대안은 이번 실행 성공 증거가 아니라 대응 방법 설명이다.
+
+## 보너스 과제: Docker Compose 단일 서비스 실행
+
+### 수행 목표
+
+기존 Dockerfile을 재사용하여 Nginx 서비스 하나를 Compose로 실행했다.
+명령으로 전달하던 실행 조건을 설정 파일로 관리하는 방법을 학습했다.
+
+### Compose 설정
+
+프로젝트 루트에 docker-compose.yml을 추가했다.
+
+```yaml
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8082:80"
+```
+
+| 항목 | 의미 |
+|---|---|
+| services | 실행할 서비스 정의 |
+| web | 서비스 이름 |
+| build.context | 이미지 빌드에 사용할 프로젝트 폴더 |
+| build.dockerfile | 기존 Dockerfile 지정 |
+| ports | 호스트와 컨테이너의 포트 연결 |
+
+127.0.0.1:8082를 컨테이너의 80 포트에 연결했다.
+따라서 같은 PC에서 http://127.0.0.1:8082로 접속할 수 있다.
+
+Dockerfile은 이미지 생성 방법을 정의하고,
+Compose 파일은 서비스의 빌드와 실행 설정을 정의한다.
+현재 Compose에서는 최상위 version 항목 없이 작성할 수 있다.
+
+### 실행 및 검증 방법
+
+프로젝트 루트에서 Docker Desktop 엔진이 실행된 상태로 수행한다.
+
+```powershell
+docker compose config
+docker compose up -d --build
+docker compose ps
+curl.exe -i http://127.0.0.1:8082
+docker compose logs --no-color --tail 30 web
+docker compose down
+docker compose ps -a
+```
+
+- config: 설정 문법과 해석 결과 확인
+- up -d --build: 이미지 빌드 후 백그라운드 실행
+- ps: 서비스 상태와 포트 확인
+- logs: 서비스 로그 확인
+- down: 이번 Compose의 컨테이너와 기본 네트워크 정리
+
+down 후에도 이미지와 프로젝트 파일은 유지된다.
+
+### 실제 수행 결과
+
+- 서비스: web
+- 컨테이너: developer-workspace-web-1
+- 실행 상태: Up
+- 포트 연결: 127.0.0.1:8082 → 컨테이너 80
+- HTTP 응답: 200 OK
+- 페이지 내용: My Docker Web Server
+- 종료 확인: docker compose ps -a에서 컨테이너 항목 없음
+
+### 실행 명령이 문서화된 설정으로 바뀌는 이유
+
+docker run은 이미지, 포트 등의 옵션을 실행할 때 명령으로 전달한다.
+Compose는 실행에 필요한 조건을 YAML 파일에 기록하고 명령이 이를 읽어 실행한다.
+따라서 긴 명령의 옵션을 매번 기억하거나 다시 입력할 필요가 줄어든다.
+설정 파일을 Git으로 관리하면 변경 내용을 비교하고 이전 설정을 확인할 수 있다.
+다른 사람도 프로젝트와 설정 파일을 받아 같은 실행 조건을 확인할 수 있다.
+즉, 실행 설정이 실제 동작에 사용되는 문서가 된다.
+다만 이미지 태그의 변경이나 실행 환경 차이까지 자동으로 없애는 것은 아니다.
+
+### 실행 증거
+
+- [실행 상태](docs/bonus-compose-status.txt)
+- [HTTP 응답과 페이지](docs/bonus-compose-http.txt)
+- [서비스 로그](docs/bonus-compose-logs.txt)
+- [종료 후 상태](docs/bonus-compose-down.txt)
